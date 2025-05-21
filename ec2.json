@@ -1,0 +1,146 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "CloudFormation template to launch an EC2 instance with Nginx on the latest Amazon Linux 2 AMI. It creates a security group allowing HTTP and SSH.",
+  "Parameters": {
+    "VpcId": {
+      "Description": "ID of the VPC where the EC2 instance and security group will be created.",
+      "Type": "AWS::EC2::VPC::Id",
+      "ConstraintDescription": "Must be a valid VPC ID."
+    },
+    "SubnetId": {
+      "Description": "ID of the public subnet within the specified VPC where the EC2 instance will be launched. The subnet must have a route to an Internet Gateway.",
+      "Type": "AWS::EC2::Subnet::Id",
+      "ConstraintDescription": "Must be a valid Subnet ID."
+    },
+    "InstanceType": {
+      "Description": "EC2 instance type.",
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": [
+        "t2.micro",
+        "t2.small",
+        "t3.micro",
+        "t3.small"
+      ],
+      "ConstraintDescription": "Must be a valid EC2 instance type."
+    },
+    "KeyName": {
+      "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance.",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
+    },
+  "Mappings": {
+    "AWSAMIRegionMap": {
+      "eu-central-1": {
+        "AMZL2": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+      }
+    }
+  },
+  "Resources": {
+    "NginxSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupName": "servicenow-aipoc-nginx-sg",
+        "GroupDescription": "Allow HTTP and SSH traffic",
+        "VpcId": {
+          "Ref": "VpcId"
+        },
+        "SecurityGroupIngress": [
+          {
+            "Description": "HTTP",
+            "IpProtocol": "tcp",
+            "FromPort": 80,
+            "ToPort": 80,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "-1",
+            "FromPort": 0,
+            "ToPort": 0,
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "servicenow-aipoc-nginx-sg"
+          }
+        ]
+      }
+    },
+    "NginxEC2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSAMIRegionMap",
+            {
+              "Ref": "AWS::Region"
+            },
+            "AMZL2"
+          ]
+        },
+        "InstanceType": {
+          "Ref": "InstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SubnetId": {
+          "Ref": "SubnetId"
+        },
+        "SecurityGroupIds": [
+          {
+            "Ref": "NginxSecurityGroup"
+          }
+        ],
+        "AssociatePublicIpAddress": true,
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Sub": [
+              "#!/bin/bash\n",
+              "sudo yum update -y\n",
+              "sudo amazon-linux-extras install -y nginx1\n",
+              "sudo systemctl start nginx\n",
+              "sudo systemctl enable nginx\n"
+            ]
+          }
+        },
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "servicenow-aipoc-nginx-server"
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "InstanceId": {
+      "Description": "InstanceId of the newly created EC2 instance",
+      "Value": {
+        "Ref": "NginxEC2Instance"
+      }
+    },
+    "PublicIp": {
+      "Description": "Public IP address of the newly created EC2 instance",
+      "Value": {
+        "Fn::GetAtt": [
+          "NginxEC2Instance",
+          "PublicIp"
+        ]
+      }
+    },
+    "PublicDnsName": {
+      "Description": "Public DNS name of the newly created EC2 instance",
+      "Value": {
+        "Fn::GetAtt": [
+          "NginxEC2Instance",
+          "PublicDnsName"
+        ]
+      }
+    }
+  }
+}
