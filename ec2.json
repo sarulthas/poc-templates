@@ -28,11 +28,12 @@
       "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance.",
       "Type": "AWS::EC2::KeyPair::KeyName",
       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
-    },
+    }
+  },
   "Mappings": {
     "AWSAMIRegionMap": {
       "eu-central-1": {
-        "AMZL2": "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
+        "AMZL2": "ami-004379dbb99590565"
       }
     }
   },
@@ -51,6 +52,13 @@
             "IpProtocol": "tcp",
             "FromPort": 80,
             "ToPort": 80,
+            "CidrIp": "0.0.0.0/0"
+          },
+          {
+            "Description": "SSH",
+            "IpProtocol": "tcp",
+            "FromPort": 22,
+            "ToPort": 22,
             "CidrIp": "0.0.0.0/0"
           }
         ],
@@ -96,16 +104,9 @@
             "Ref": "NginxSecurityGroup"
           }
         ],
-        "AssociatePublicIpAddress": true,
         "UserData": {
           "Fn::Base64": {
-            "Fn::Sub": [
-              "#!/bin/bash\n",
-              "sudo yum update -y\n",
-              "sudo amazon-linux-extras install -y nginx1\n",
-              "sudo systemctl start nginx\n",
-              "sudo systemctl enable nginx\n"
-            ]
+            "Fn::Sub": "#!/bin/bash\nsudo yum update -y\nsudo amazon-linux-extras install -y nginx1\nsudo systemctl start nginx\nsudo systemctl enable nginx\n"
           }
         },
         "Tags": [
