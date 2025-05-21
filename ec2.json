@@ -22,7 +22,7 @@
     "InstanceType": {
       "Description": "EC2 instance type.",
       "Type": "String",
-      "Default": "t3.micro",
+      "Default": "t3.nano",
       "AllowedValues": [
         "t3.nano",
         "t3.micro",
@@ -36,7 +36,7 @@
       "ConstraintDescription": "Must be the name of an existing EC2 KeyPair."
     },
     "SSHLocation": {
-      "Description": "The IP address range that can be used to SSH to the EC2 instances (e.g., 0.0.0.0/0 for anywhere, or your specific IP x.x.x.x/32). For security, restrict this to your IP.",
+      "Description": "The IP address range that can be used to SSH to the EC2 instances.",
       "Type": "String",
       "MinLength": "9",
       "MaxLength": "18",
@@ -100,9 +100,7 @@
     "NginxEC2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "ImageId": {
-          "Ref": "LatestAmiId"
-        },
+        "ImageId": "ami-0e8726850f0cb6d73",
         "InstanceType": {
           "Ref": "InstanceType"
         },
