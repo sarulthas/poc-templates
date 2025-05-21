@@ -2,6 +2,13 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "CloudFormation template to launch an EC2 instance with Nginx on the latest Amazon Linux 2 AMI. It creates a security group allowing HTTP and SSH.",
   "Parameters": {
+    "InstanceName": {
+      "Description": "Prefix for resource names",
+      "Type": "String",
+      "Default": "servicenow-aipoc",
+      "AllowedPattern": "^[a-zA-Z0-9-_]+$",
+      "ConstraintDescription": "Only alphanumeric characters, dashes and underscores allowed."
+    },
     "VpcId": {
       "Description": "ID of the VPC where the EC2 instance and security group will be created.",
       "Type": "AWS::EC2::VPC::Id",
@@ -41,7 +48,9 @@
     "NginxSecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
-        "GroupName": "servicenow-aipoc-nginx-sg",
+        "GroupName": {
+          "Fn::Sub": "${InstanceName}-nginx-sg"
+        },
         "GroupDescription": "Allow HTTP and SSH traffic",
         "VpcId": {
           "Ref": "VpcId"
@@ -73,7 +82,9 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "servicenow-aipoc-nginx-sg"
+            "Value": {
+              "Fn::Sub": "${InstanceName}-nginx-sg"
+            }
           }
         ]
       }
@@ -112,7 +123,9 @@
         "Tags": [
           {
             "Key": "Name",
-            "Value": "servicenow-aipoc-nginx-server"
+            "Value": {
+              "Fn::Sub": "${InstanceName}-nginx-server"
+            }
           }
         ]
       }
