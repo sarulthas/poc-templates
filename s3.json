@@ -1,0 +1,37 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "CloudFormation template to create a private S3 bucket with a parameterized name.",
+    "Parameters": {
+      "BucketName": {
+        "Type": "String",
+        "Description": "Name of the S3 bucket to be created",
+        "AllowedPattern": "^[a-z0-9.-]{3,63}$",
+        "ConstraintDescription": "Bucket name must be between 3 and 63 characters, lowercase letters, numbers, dots, and hyphens only."
+      }
+    },
+    "Resources": {
+      "PrivateS3Bucket": {
+        "Type": "AWS::S3::Bucket",
+        "Properties": {
+          "BucketName": {
+            "Ref": "BucketName"
+          },
+          "AccessControl": "Private",
+          "PublicAccessBlockConfiguration": {
+            "BlockPublicAcls": true,
+            "BlockPublicPolicy": true,
+            "IgnorePublicAcls": true,
+            "RestrictPublicBuckets": true
+          }
+        }
+      }
+    },
+    "Outputs": {
+      "S3BucketName": {
+        "Description": "Name of the private S3 bucket",
+        "Value": {
+          "Ref": "PrivateS3Bucket"
+        }
+      }
+    }
+  }
